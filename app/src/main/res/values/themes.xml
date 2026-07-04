@@ -1,0 +1,18 @@
+<resources>
+    <style name="Theme.VpnSwitcher" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/vg_primary_container</item>
+        <item name="colorOnPrimary">@color/vg_on_primary_container</item>
+        <item name="colorPrimaryContainer">@color/vg_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/vg_on_primary_container</item>
+        <item name="colorSecondary">@color/vg_secondary</item>
+        <item name="colorTertiary">@color/vg_tertiary</item>
+        <item name="android:colorBackground">@color/vg_background</item>
+        <item name="colorSurface">@color/vg_surface</item>
+        <item name="colorOnSurface">@color/vg_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/vg_on_surface_variant</item>
+        <item name="colorOutlineVariant">@color/vg_outline_variant</item>
+        <item name="android:statusBarColor">@color/vg_background</item>
+        <item name="android:navigationBarColor">@color/vg_surface_container</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

@@ -1,0 +1,17 @@
+*.iml
+.gradle
+/local.properties
+/.android-sdk
+/.idea
+.DS_Store
+/build
+app/build/
+.gradle/
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+output.json
+stitch.zip
+stitch_ui/
+assets/

@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">VPN Switcher</string>
+    <string name="app_tagline">Автопереключение ChatVPN ↔ Happ</string>
+
+    <string name="status_ready">Готов к работе</string>
+    <string name="status_setup">Требуется настройка</string>
+
+    <string name="btn_shizuku">Настроить Shizuku</string>
+    <string name="btn_vpn_permission">VPN-разрешение</string>
+    <string name="btn_about">О приложении</string>
+
+    <string name="switch_on_unavailable">Переключать VPN при недоступности</string>
+    <string name="switch_on_unavailable_hint">Wi-Fi пропал → 10 с → проверка сети → Happ</string>
+    <string name="switch_always">Переключать VPN всегда</string>
+    <string name="switch_always_hint">Wi-Fi пропал → сразу Happ, без проверки</string>
+    <string name="switch_push">Отправка пушей</string>
+    <string name="switch_push_hint">Только когда нужно ваше действие</string>
+
+    <string name="setup_title">Первоначальная настройка</string>
+    <string name="setup_body">Работает только с ChatVPN (Wi-Fi) и Happ (mobile).\n\n1. Запустите Shizuku и нажмите «Настроить Shizuku».\n2. Выдайте VPN-разрешение.\n3. Добавьте виджет Happ на рабочий стол.\n4. Подключите ChatVPN и Happ вручную по одному разу.\n5. Включите нужный режим переключения.</string>
+
+    <string name="wifi_vpn_reminder_title">Включите ChatVPN</string>
+    <string name="wifi_vpn_reminder_text">Вы на Wi-Fi — подключите ChatVPN.</string>
+
+    <string name="about_title">О приложении</string>
+    <string name="about_body">VPN Switcher — автопереключение между ChatVPN и Happ.\n\nКод подготовлен с помощью Cursor.</string>
+    <string name="about_github">GitHub</string>
+    <string name="about_donate">Донат</string>
+    <string name="about_donate_crypto">Донат криптой</string>
+    <string name="about_check_update">Проверить обновление</string>
+    <string name="about_update_available">Доступна версия %1$s</string>
+    <string name="about_update_none">Обновлений нет</string>
+    <string name="about_update_downloading">Загрузка…</string>
+
+    <string name="monitor_notification_text">Мониторинг сети</string>
+    <string name="action_notification_channel">Действия</string>
+</resources>
