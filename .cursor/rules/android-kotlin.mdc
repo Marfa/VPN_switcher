@@ -1,0 +1,14 @@
+---
+description: Android Kotlin — minimal diffs, early returns, match project conventions
+globs: "**/*.{kt,kts}"
+alwaysApply: false
+---
+
+# Android Kotlin (VPN Switcher)
+
+- Kotlin coroutines for async; no blocking on main thread
+- Shizuku shell only via `ShizukuManager.run()`
+- VPN switch logic in `VpnOrchestrator`; network edges in `NetworkMonitorService`
+- Prefer `AppConstants` for package names and pref keys
+- Minimal diffs; reuse existing patterns before adding abstractions
+- Comments only for non-obvious constraints (ponytail: ceiling if shortcut)

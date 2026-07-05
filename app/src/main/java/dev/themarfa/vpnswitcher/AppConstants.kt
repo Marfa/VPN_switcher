@@ -26,6 +26,7 @@ object AppConstants {
     const val KEY_SWITCH_ON_UNAVAILABLE = "switch_on_unavailable"
     const val KEY_SWITCH_ALWAYS = "switch_always"
     const val KEY_PUSH_ENABLED = "push_enabled"
+    const val KEY_ON_HAPP_MODE = "on_happ_mode"
     const val KEY_LAST_STATUS = "last_status"
 
     const val GITHUB_REPO = "Marfa/VPN_switcher"

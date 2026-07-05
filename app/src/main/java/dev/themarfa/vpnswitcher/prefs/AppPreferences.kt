@@ -78,6 +78,14 @@ class AppPreferences(context: Context) {
 
 
 
+    var onHappMode: Boolean
+
+        get() = store.getBoolean(AppConstants.KEY_ON_HAPP_MODE, false)
+
+        set(value) = store.edit().putBoolean(AppConstants.KEY_ON_HAPP_MODE, value).apply()
+
+
+
     var lastStatus: String
 
         get() = store.getString(AppConstants.KEY_LAST_STATUS, "Ожидание") ?: "Ожидание"

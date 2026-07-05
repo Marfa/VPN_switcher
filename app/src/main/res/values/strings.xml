@@ -27,7 +27,14 @@
     <string name="about_github">GitHub</string>
     <string name="about_donate">Донат</string>
     <string name="about_donate_crypto">Донат криптой</string>
+    <string name="btn_start_logs">Собрать логи</string>
+    <string name="btn_stop_logs">Остановить сбор логов</string>
+    <string name="logs_started">Сбор логов запущен</string>
+    <string name="logs_failed">Не удалось начать сбор</string>
+    <string name="logs_empty">Лог пуст</string>
+
     <string name="about_check_update">Проверить обновление</string>
+    <string name="about_license">Лицензия проекта</string>
     <string name="about_update_available">Доступна версия %1$s</string>
     <string name="about_update_none">Обновлений нет</string>
     <string name="about_update_downloading">Загрузка…</string>
