@@ -150,6 +150,8 @@ class NetworkMonitorService : Service() {
 
         super.onCreate()
 
+        isRunning = true
+
         ShizukuManager.start()
 
         connectivityManager = getSystemService(ConnectivityManager::class.java)
@@ -166,7 +168,7 @@ class NetworkMonitorService : Service() {
 
         wasWifi = NetworkTransport.hasWifi(connectivityManager)
 
-        suppressWifiReminderUntil = SystemClock.elapsedRealtime() + 3_000
+        suppressWifiReminderUntil = SystemClock.elapsedRealtime() + 60_000
 
         suppressWifiOffUntil = SystemClock.elapsedRealtime() + 15_000
 
@@ -257,6 +259,8 @@ class NetworkMonitorService : Service() {
         ShizukuManager.stop()
 
         scope.cancel()
+
+        isRunning = false
 
         super.onDestroy()
 
@@ -445,9 +449,17 @@ class NetworkMonitorService : Service() {
 
             delay(1_500)
 
+            if (VpnMonitor.isLikelyHappActive(this)) {
+                prefs.onHappMode = true
+            }
+
             updateStatus(happStatusAfterSwitch(), notify = false)
 
         } catch (_: TimeoutCancellationException) {
+
+            if (VpnMonitor.isLikelyHappActive(this)) {
+                prefs.onHappMode = true
+            }
 
             updateStatus(
 
@@ -479,9 +491,10 @@ class NetworkMonitorService : Service() {
 
     private fun onWifiReturned() {
         scope.launch {
-            if (prefs.switchAlways || prefs.switchOnUnavailable) {
+            if (prefs.onHappMode && (prefs.switchAlways || prefs.switchOnUnavailable)) {
                 if (ShizukuManager.shellReady() || ShizukuManager.awaitUserService(5_000) && ShizukuManager.shellReady()) {
                     orchestrator.prepareWifiMode()
+                    prefs.onHappMode = false
                 }
             }
             onWifiConnectedMaybe()
@@ -510,6 +523,7 @@ class NetworkMonitorService : Service() {
     private fun onWifiConnected() {
         updateStatus("Wi-Fi подключён", notify = false)
         if (!prefs.pushEnabled) return
+        if (prefs.switchAlways || prefs.switchOnUnavailable) return
         sendWifiVpnReminder()
     }
 
@@ -724,6 +738,8 @@ class NetworkMonitorService : Service() {
 
         fun start(context: android.content.Context) {
 
+            if (isRunning) return
+
             context.startForegroundService(Intent(context, NetworkMonitorService::class.java))
 
         }
@@ -735,6 +751,12 @@ class NetworkMonitorService : Service() {
             context.stopService(Intent(context, NetworkMonitorService::class.java))
 
         }
+
+
+
+        @Volatile
+
+        var isRunning: Boolean = false
 
     }
 

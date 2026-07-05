@@ -21,11 +21,12 @@ object NetworkTransport {
     }
 
     fun networkSummary(cm: ConnectivityManager): String {
-        val wifi = if (hasWifi(cm)) "Wi-Fi✓" else "Wi-Fi✗"
-        val cell = if (hasCellular(cm)) "mobile✓" else "mobile✗"
-        val def = label(resolve(cm))
-        return "$wifi $cell · default:$def"
+        val active = resolve(cm)
+        return if (active != null) "Сеть: ${label(active)}" else "Сеть: нет"
     }
+
+    fun isDefaultWifi(cm: ConnectivityManager): Boolean =
+        resolve(cm) == NetworkCapabilities.TRANSPORT_WIFI
 
     fun hasWifi(cm: ConnectivityManager): Boolean {
         for (network in cm.allNetworks) {

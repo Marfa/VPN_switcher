@@ -25,6 +25,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.themarfa.vpnswitcher.AppConstants
 import dev.themarfa.vpnswitcher.R
 import dev.themarfa.vpnswitcher.databinding.ActivityMainBinding
+import dev.themarfa.vpnswitcher.debug.DebugLogCollector
 import dev.themarfa.vpnswitcher.network.NetworkTransport
 import dev.themarfa.vpnswitcher.prefs.AppPreferences
 import dev.themarfa.vpnswitcher.service.NetworkMonitorService
@@ -56,7 +57,7 @@ class MainActivity : AppCompatActivity() {
 
     private val statusPrefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == AppConstants.KEY_LAST_STATUS) {
-            runOnUiThread { binding.statusText.text = prefs.lastStatus }
+            runOnUiThread { binding.statusText.text = buildStatusLine() }
         }
     }
 
@@ -96,8 +97,10 @@ class MainActivity : AppCompatActivity() {
         bindSwitches()
         binding.shizukuButton.setOnClickListener { requestShizuku() }
         binding.vpnPermissionButton.setOnClickListener { requestVpnPermission() }
+        binding.logButton.setOnClickListener { handleLogButton() }
         binding.aboutButton.setOnClickListener { showAboutDialog() }
 
+        updateLogButton()
         requestNotificationPermissionIfNeeded()
         refreshUi()
         syncServiceState()
@@ -111,9 +114,6 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         ShizukuManager.bindUserService()
-        if (Shizuku.pingBinder() && !ShizukuManager.hasPermission()) {
-            ShizukuManager.requestPermission()
-        }
         refreshJob = lifecycleScope.launch {
             while (isActive) {
                 refreshUi()
@@ -208,18 +208,20 @@ class MainActivity : AppCompatActivity() {
         binding.statusChipText.setTextColor(
             getColor(if (ready) R.color.vg_secondary else R.color.vg_on_surface_variant),
         )
+        updateLogButton()
     }
 
     private fun buildStatusLine(): String {
         val cm = getSystemService(ConnectivityManager::class.java)
         val net = NetworkTransport.networkSummary(cm)
-        return "${prefs.lastStatus} · $net"
+        val status = prefs.lastStatus
+        return if (status.contains("Сеть:")) status else "$status · $net"
     }
 
     private fun isSetupReady(): Boolean {
         if (!Shizuku.pingBinder()) return false
         if (!ShizukuManager.hasPermission()) return false
-        if (!ShizukuManager.shellReady()) return false
+        if (!ShizukuManager.isReady) return false
         if (VpnService.prepare(this) != null) return false
         return true
     }
@@ -269,6 +271,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun handleLogButton() {
+        if (DebugLogCollector.isCollecting) {
+            if (DebugLogCollector.stopAndShare(this)) {
+                updateLogButton()
+            } else {
+                Toast.makeText(this, R.string.logs_empty, Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+        if (DebugLogCollector.start(this)) {
+            Toast.makeText(this, R.string.logs_started, Toast.LENGTH_SHORT).show()
+            updateLogButton()
+        } else {
+            Toast.makeText(this, R.string.logs_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun updateLogButton() {
+        binding.logButton.text = if (DebugLogCollector.isCollecting) {
+            getString(R.string.btn_stop_logs)
+        } else {
+            getString(R.string.btn_start_logs)
+        }
+    }
+
     private fun requestNotificationPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
@@ -302,25 +329,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showAboutDialog() {
-        MaterialAlertDialogBuilder(this)
+        val view = layoutInflater.inflate(R.layout.dialog_about, null)
+        val dialog = MaterialAlertDialogBuilder(this)
             .setTitle(R.string.about_title)
-            .setMessage(R.string.about_body)
-            .setItems(
-                arrayOf(
-                    getString(R.string.about_github),
-                    getString(R.string.about_donate),
-                    getString(R.string.about_donate_crypto),
-                    getString(R.string.about_check_update),
-                ),
-            ) { _, which ->
-                when (which) {
-                    0 -> openUrl(AppConstants.GITHUB_URL)
-                    1 -> openUrl(AppConstants.DONATE_URL)
-                    2 -> openUrl(AppConstants.DONATE_CRYPTO_URL)
-                    3 -> lifecycleScope.launch { checkForUpdates(silent = false) }
-                }
-            }
-            .show()
+            .setView(view)
+            .setPositiveButton(android.R.string.ok, null)
+            .create()
+
+        view.findViewById<android.view.View>(R.id.aboutGithub).setOnClickListener {
+            openUrl(AppConstants.GITHUB_URL)
+        }
+        view.findViewById<android.view.View>(R.id.aboutDonate).setOnClickListener {
+            openUrl(AppConstants.DONATE_URL)
+        }
+        view.findViewById<android.view.View>(R.id.aboutDonateCrypto).setOnClickListener {
+            openUrl(AppConstants.DONATE_CRYPTO_URL)
+        }
+        view.findViewById<android.view.View>(R.id.aboutUpdate).setOnClickListener {
+            dialog.dismiss()
+            lifecycleScope.launch { checkForUpdates(silent = false) }
+        }
+        view.findViewById<android.view.View>(R.id.aboutLicense).setOnClickListener {
+            openUrl("${AppConstants.GITHUB_URL}/blob/main/LICENSE")
+        }
+        dialog.show()
     }
 
     private fun openUrl(url: String) {

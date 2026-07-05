@@ -2,19 +2,20 @@
 <resources>
     <color name="ic_launcher_background">#4F46E5</color>
 
-    <color name="vg_background">#0B1326</color>
-    <color name="vg_surface">#0B1326</color>
-    <color name="vg_surface_container">#171F33</color>
-    <color name="vg_surface_container_high">#222A3D</color>
-    <color name="vg_surface_container_highest">#2D3449</color>
-    <color name="vg_on_surface">#DAE2FD</color>
-    <color name="vg_on_surface_variant">#C7C4D8</color>
-    <color name="vg_outline_variant">#464555</color>
-    <color name="vg_primary">#C3C0FF</color>
+    <color name="vg_background">#F9F9FF</color>
+    <color name="vg_surface">#F9F9FF</color>
+    <color name="vg_surface_container">#E7EEFF</color>
+    <color name="vg_surface_container_high">#DEE8FF</color>
+    <color name="vg_on_surface">#111C2D</color>
+    <color name="vg_on_surface_variant">#464555</color>
+    <color name="vg_outline_variant">#C7C4D8</color>
+    <color name="vg_primary">#3525CD</color>
     <color name="vg_primary_container">#4F46E5</color>
-    <color name="vg_on_primary_container">#DAD7FF</color>
-    <color name="vg_secondary">#4CD7F6</color>
-    <color name="vg_tertiary">#4EDEA3</color>
+    <color name="vg_on_primary_container">#FFFFFF</color>
+    <color name="vg_secondary">#00687A</color>
+    <color name="vg_tertiary">#005338</color>
     <color name="vg_tertiary_container">#006E4B</color>
-    <color name="vg_error">#FFB4AB</color>
+    <color name="vg_error">#BA1A1A</color>
+    <color name="vg_footer_bg">#E7EEFF</color>
+    <color name="vg_status_chip_bg">#1A4F46E5</color>
 </resources>

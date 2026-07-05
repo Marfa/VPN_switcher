@@ -33,8 +33,7 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:contentDescription="@null"
-                    android:src="@drawable/ic_notification"
-                    app:tint="@color/vg_primary" />
+                    android:src="@mipmap/ic_launcher" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -104,18 +103,30 @@
                 android:textAllCaps="false"
                 app:backgroundTint="@color/vg_primary_container"
                 app:cornerRadius="16dp"
-                app:icon="@drawable/ic_notification"
+                app:icon="@drawable/ic_shield"
                 app:iconGravity="textStart"
                 app:iconTint="@color/vg_on_primary_container" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/vpnPermissionButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/btn_vpn_permission"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/vg_primary_container"
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_vpn_key"
+                app:iconGravity="textStart"
+                app:iconTint="@color/vg_on_primary_container" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/logButton"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="10dp"
-                android:background="@drawable/bg_secondary_button"
-                android:text="@string/btn_vpn_permission"
+                android:text="@string/btn_start_logs"
                 android:textAllCaps="false"
                 android:textColor="@color/vg_on_surface"
                 app:cornerRadius="16dp"
@@ -209,7 +220,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@color/vg_surface_container"
+        android:background="@color/vg_footer_bg"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="20dp"

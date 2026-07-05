@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lineSpacingExtra="3dp"
+        android:text="@string/about_body"
+        android:textColor="@color/vg_on_surface_variant"
+        android:textSize="14sp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/aboutGithub"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="start|center_vertical"
+        android:text="@string/about_github"
+        android:textAllCaps="false"
+        android:textColor="@color/vg_primary_container" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/aboutDonate"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="@string/about_donate"
+        android:textAllCaps="false"
+        android:textColor="@color/vg_primary_container" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/aboutDonateCrypto"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="@string/about_donate_crypto"
+        android:textAllCaps="false"
+        android:textColor="@color/vg_primary_container" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/aboutUpdate"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="@string/about_check_update"
+        android:textAllCaps="false"
+        android:textColor="@color/vg_primary_container" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/aboutLicense"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="@string/about_license"
+        android:textAllCaps="false"
+        android:textColor="@color/vg_on_surface_variant" />
+</LinearLayout>

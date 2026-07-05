@@ -66,7 +66,10 @@ class VpnOrchestrator(private val context: Context) {
     suspend fun stopHapp() {
         AppController.forceStop(AppConstants.HAPP_PACKAGE)
         delay(300)
-        if (VpnMonitor.isVpnActive(context)) {
+        val owner = VpnMonitor.ownerPackage()
+        val happVpn = owner == AppConstants.HAPP_PACKAGE ||
+            (owner == null && VpnMonitor.isLikelyHappActive(context))
+        if (happVpn && VpnMonitor.isVpnActive(context)) {
             dummyVpn.revokeOtherVpn()
             VpnMonitor.waitForVpnOff(context, 4_000)
         }
