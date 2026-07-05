@@ -5,16 +5,13 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
-import android.net.Uri
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -31,12 +28,12 @@ import dev.themarfa.vpnswitcher.prefs.AppPreferences
 import dev.themarfa.vpnswitcher.service.NetworkMonitorService
 import dev.themarfa.vpnswitcher.shizuku.ShizukuManager
 import dev.themarfa.vpnswitcher.update.GitHubUpdater
+import dev.themarfa.vpnswitcher.update.UpdateNotifier
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
-import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -72,10 +69,6 @@ class MainActivity : AppCompatActivity() {
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
-    ) { _ -> }
-
-    private val installPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult(),
     ) { _ -> }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -363,56 +356,12 @@ class MainActivity : AppCompatActivity() {
         val current = packageManager.getPackageInfo(packageName, 0).versionName ?: return
         val update = GitHubUpdater.checkForUpdate(current)
         if (update == null) {
+            UpdateNotifier.dismiss(this)
             if (!silent) {
                 Toast.makeText(this, R.string.about_update_none, Toast.LENGTH_SHORT).show()
             }
             return
         }
-        if (silent) {
-            Toast.makeText(
-                this,
-                getString(R.string.about_update_available, update.versionName),
-                Toast.LENGTH_LONG,
-            ).show()
-            return
-        }
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.about_update_available, update.versionName))
-            .setMessage(update.releaseNotes.ifBlank { "Загрузить и установить?" })
-            .setPositiveButton("Обновить") { _, _ ->
-                lifecycleScope.launch { downloadAndInstall(update) }
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
-    }
-
-    private suspend fun downloadAndInstall(update: dev.themarfa.vpnswitcher.update.UpdateInfo) {
-        val dir = File(cacheDir, "updates").apply { mkdirs() }
-        val apk = File(dir, "update.apk")
-        Toast.makeText(this, R.string.about_update_downloading, Toast.LENGTH_SHORT).show()
-        val ok = GitHubUpdater.downloadApk(update.downloadUrl, apk) { }
-        if (!ok) {
-            Toast.makeText(this, "Ошибка загрузки", Toast.LENGTH_LONG).show()
-            return
-        }
-        installApk(apk)
-    }
-
-    private fun installApk(apk: File) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !packageManager.canRequestPackageInstalls()) {
-            val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
-                data = "package:$packageName".toUri()
-            }
-            installPermissionLauncher.launch(intent)
-            Toast.makeText(this, "Разрешите установку, затем повторите", Toast.LENGTH_LONG).show()
-            return
-        }
-        val uri: Uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", apk)
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/vnd.android.package-archive")
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        startActivity(intent)
+        UpdateNotifier.show(this, update.versionName, update.releasePageUrl)
     }
 }

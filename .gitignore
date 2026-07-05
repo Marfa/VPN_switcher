@@ -11,6 +11,8 @@ app/build/
 .externalNativeBuild
 .cxx
 *.apk
+keystore/
+keystore.properties
 output.json
 stitch.zip
 stitch_ui/
