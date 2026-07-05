@@ -45,6 +45,7 @@ import dev.themarfa.vpnswitcher.probe.TelegramProbe
 import dev.themarfa.vpnswitcher.shizuku.ShizukuManager
 
 import dev.themarfa.vpnswitcher.ui.MainActivity
+import dev.themarfa.vpnswitcher.ui.UiForegroundGuard
 
 import dev.themarfa.vpnswitcher.vpn.VpnMonitor
 
@@ -302,6 +303,16 @@ class NetworkMonitorService : Service() {
         val wifiNow = NetworkTransport.hasWifi(connectivityManager)
         val cellNow = NetworkTransport.hasCellular(connectivityManager)
 
+        if (UiForegroundGuard.isMainActivityVisible) {
+            wasWifi = wifiNow
+            lastTransport = when {
+                wifiNow -> NetworkCapabilities.TRANSPORT_WIFI
+                cellNow -> NetworkCapabilities.TRANSPORT_CELLULAR
+                else -> lastTransport
+            }
+            return
+        }
+
         if (wasWifi && !wifiNow) {
             Log.i(TAG, "wifi edge: lost")
             maybeStartWifiOffFlow()
@@ -347,6 +358,8 @@ class NetworkMonitorService : Service() {
 
         if (handlingDisconnect) return
 
+        if (UiForegroundGuard.isMainActivityVisible) return
+
         handlingDisconnect = true
 
         MonitorWakeLock.acquire(this, 60_000L)
@@ -356,6 +369,8 @@ class NetworkMonitorService : Service() {
             updateStatus("Wi-Fi пропал, ждём…", notify = false)
             val waitMs = if (prefs.switchAlways) 3_000L else AppConstants.WIFI_LOST_PROBE_DELAY_MS
             delay(waitMs)
+
+            if (UiForegroundGuard.isMainActivityVisible) return
 
             if (!ShizukuManager.shellReady()) {
                 updateStatus("Нужен Shizuku — нажмите «Настроить Shizuku»")
@@ -490,6 +505,10 @@ class NetworkMonitorService : Service() {
 
 
     private fun onWifiReturned() {
+        if (UiForegroundGuard.isMainActivityVisible) {
+            onWifiConnectedMaybe()
+            return
+        }
         scope.launch {
             if (prefs.onHappMode && (prefs.switchAlways || prefs.switchOnUnavailable)) {
                 if (ShizukuManager.shellReady() || ShizukuManager.awaitUserService(5_000) && ShizukuManager.shellReady()) {
