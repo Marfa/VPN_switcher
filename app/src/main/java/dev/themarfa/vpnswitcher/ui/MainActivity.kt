@@ -106,6 +106,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        UiForegroundGuard.isMainActivityVisible = true
         ShizukuManager.bindUserService()
         refreshJob = lifecycleScope.launch {
             while (isActive) {
@@ -116,6 +117,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
+        UiForegroundGuard.isMainActivityVisible = false
         refreshJob?.cancel()
         refreshJob = null
         super.onStop()

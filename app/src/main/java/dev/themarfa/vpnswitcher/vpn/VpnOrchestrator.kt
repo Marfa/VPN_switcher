@@ -49,6 +49,11 @@ class VpnOrchestrator(private val context: Context) {
     }
 
     suspend fun prepareWifiMode() {
+        if (VpnMonitor.isChatVpnActive(context)) {
+            AppController.enableChatVpn()
+            delay(300)
+            return
+        }
         stopHapp()
         AppController.enableChatVpn()
         delay(300)
@@ -66,10 +71,9 @@ class VpnOrchestrator(private val context: Context) {
     suspend fun stopHapp() {
         AppController.forceStop(AppConstants.HAPP_PACKAGE)
         delay(300)
-        val owner = VpnMonitor.ownerPackage()
-        val happVpn = owner == AppConstants.HAPP_PACKAGE ||
-            (owner == null && VpnMonitor.isLikelyHappActive(context))
-        if (happVpn && VpnMonitor.isVpnActive(context)) {
+        if (VpnMonitor.ownerPackage() == AppConstants.HAPP_PACKAGE &&
+            VpnMonitor.isVpnActive(context)
+        ) {
             dummyVpn.revokeOtherVpn()
             VpnMonitor.waitForVpnOff(context, 4_000)
         }

@@ -63,5 +63,5 @@
         android:gravity="start|center_vertical"
         android:text="@string/about_license"
         android:textAllCaps="false"
-        android:textColor="@color/vg_on_surface_variant" />
+        android:textColor="@color/vg_primary_container" />
 </LinearLayout>
