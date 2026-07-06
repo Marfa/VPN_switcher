@@ -214,14 +214,16 @@
                     android:textSize="13sp" />
             </LinearLayout>
 
-            <WebView
+            <ImageView
                 android:id="@+id/proxyAdBanner"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:background="@android:color/transparent"
+                android:adjustViewBounds="true"
                 android:contentDescription="@string/proxy_ad_banner_desc"
-                android:scrollbars="none" />
+                android:maxHeight="60dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone" />
         </LinearLayout>
     </ScrollView>
 

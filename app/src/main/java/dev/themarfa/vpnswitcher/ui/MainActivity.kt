@@ -4,13 +4,13 @@ import android.Manifest
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -31,11 +31,15 @@ import dev.themarfa.vpnswitcher.prefs.AppPreferences
 import dev.themarfa.vpnswitcher.service.NetworkMonitorService
 import dev.themarfa.vpnswitcher.shizuku.ShizukuManager
 import dev.themarfa.vpnswitcher.update.UpdateChecker
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
+import java.net.HttpURLConnection
+import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
@@ -376,32 +380,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupProxyBanner() {
-        val banner = binding.proxyAdBanner
-        banner.isVerticalScrollBarEnabled = false
-        banner.isHorizontalScrollBarEnabled = false
-        banner.settings.javaScriptEnabled = false
-        banner.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-        banner.webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                openUrl(AppConstants.PROXY_AD_URL)
-                return true
+        binding.proxyAdBanner.setOnClickListener { openUrl(AppConstants.PROXY_AD_URL) }
+        lifecycleScope.launch {
+            val bitmap = withContext(Dispatchers.IO) {
+                try {
+                    val conn = URL(AppConstants.PROXY_AD_IMAGE_URL).openConnection() as HttpURLConnection
+                    conn.connectTimeout = 15_000
+                    conn.readTimeout = 15_000
+                    conn.instanceFollowRedirects = true
+                    conn.inputStream.use { BitmapFactory.decodeStream(it) }
+                } catch (e: Exception) {
+                    Log.w(TAG, "proxy banner load failed", e)
+                    null
+                }
+            }
+            if (bitmap != null) {
+                binding.proxyAdBanner.setImageBitmap(bitmap)
+                binding.proxyAdBanner.visibility = View.VISIBLE
             }
         }
-        val html = """
-            <html><head>
-            <meta name="viewport" content="width=device-width,initial-scale=1">
-            </head><body style="margin:0;padding:0;background:transparent">
-            <a href="${AppConstants.PROXY_AD_URL}">
-            <img src="${AppConstants.PROXY_AD_IMAGE_URL}" width="100%"
-            style="max-height:60px;object-fit:contain;display:block"/>
-            </a></body></html>
-        """.trimIndent()
-        banner.loadDataWithBaseURL(
-            AppConstants.PROXY_AD_URL,
-            html,
-            "text/html",
-            "UTF-8",
-            null,
-        )
+    }
+
+    companion object {
+        private const val TAG = "MainActivity"
     }
 }
