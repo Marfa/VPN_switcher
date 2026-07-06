@@ -5,6 +5,7 @@ import android.os.PowerManager
 import android.util.Log
 import dev.themarfa.vpnswitcher.AppConstants
 import dev.themarfa.vpnswitcher.shizuku.ShizukuManager
+import dev.themarfa.vpnswitcher.ui.UiForegroundGuard
 import kotlinx.coroutines.delay
 
 class VpnOrchestrator(private val context: Context) {
@@ -12,6 +13,10 @@ class VpnOrchestrator(private val context: Context) {
     private val dummyVpn = DummyVpnController(context)
 
     suspend fun switchToHapp(serverLabel: String = "") {
+        if (UiForegroundGuard.isMainActivityVisible) {
+            Log.i(TAG, "skip switchToHapp: UI visible")
+            return
+        }
         if (!ShizukuManager.shellReady()) {
             Log.e(TAG, "shell not ready")
             return
@@ -49,6 +54,10 @@ class VpnOrchestrator(private val context: Context) {
     }
 
     suspend fun prepareWifiMode() {
+        if (UiForegroundGuard.isMainActivityVisible) {
+            Log.i(TAG, "skip prepareWifiMode: UI visible")
+            return
+        }
         if (VpnMonitor.isChatVpnActive(context)) {
             AppController.enableChatVpn()
             delay(300)

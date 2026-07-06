@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.net.toUri
+import dev.themarfa.vpnswitcher.AppConstants
 import dev.themarfa.vpnswitcher.R
 
 object UpdateNotifier {
@@ -30,10 +31,11 @@ object UpdateNotifier {
 
     fun show(context: Context, versionName: String, releasePageUrl: String) {
         ensureChannel(context)
+        val url = releasePageUrl.takeIf { it.isNotBlank() } ?: AppConstants.GITHUB_RELEASES_URL
         val open = PendingIntent.getActivity(
             context,
             0,
-            Intent(Intent.ACTION_VIEW, releasePageUrl.toUri()),
+            Intent(Intent.ACTION_VIEW, url.toUri()),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -41,11 +43,10 @@ object UpdateNotifier {
             .setContentTitle(context.getString(R.string.update_notification_title, versionName))
             .setContentText(context.getString(R.string.update_notification_text))
             .setContentIntent(open)
-            .setAutoCancel(false)
-            .setOngoing(true)
-            .setOnlyAlertOnce(true)
+            .setAutoCancel(true)
+            .setOngoing(false)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
             .build()
         context.getSystemService(NotificationManager::class.java)
             .notify(NOTIFICATION_ID, notification)

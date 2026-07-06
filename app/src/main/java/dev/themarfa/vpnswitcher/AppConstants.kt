@@ -28,9 +28,13 @@ object AppConstants {
     const val KEY_PUSH_ENABLED = "push_enabled"
     const val KEY_ON_HAPP_MODE = "on_happ_mode"
     const val KEY_LAST_STATUS = "last_status"
+    const val KEY_LAST_NOTIFIED_UPDATE = "last_notified_update_version"
 
     const val GITHUB_REPO = "Marfa/VPN_switcher"
     const val GITHUB_URL = "https://github.com/Marfa/VPN_switcher"
+    const val GITHUB_RELEASES_URL = "https://github.com/Marfa/VPN_switcher/releases/latest"
+    const val PROXY_AD_URL = "https://proxys.world/?refid=41873"
+    const val PROXY_AD_IMAGE_URL = "https://proxys.world/img/b/new_light_900x60.gif"
     const val DONATE_URL = "https://www.donationalerts.com/r/themarfa"
     const val DONATE_CRYPTO_URL = "https://nowpayments.io/donation/themarfa"
 }

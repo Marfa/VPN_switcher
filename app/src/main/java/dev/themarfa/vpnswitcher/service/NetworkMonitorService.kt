@@ -44,6 +44,7 @@ import dev.themarfa.vpnswitcher.probe.TelegramProbe
 
 import dev.themarfa.vpnswitcher.shizuku.ShizukuManager
 
+import dev.themarfa.vpnswitcher.update.UpdateChecker
 import dev.themarfa.vpnswitcher.ui.MainActivity
 import dev.themarfa.vpnswitcher.ui.UiForegroundGuard
 
@@ -151,6 +152,8 @@ class NetworkMonitorService : Service() {
 
         super.onCreate()
 
+        instance = this
+
         isRunning = true
 
         ShizukuManager.start()
@@ -207,6 +210,16 @@ class NetworkMonitorService : Service() {
 
         scope.launch {
 
+            delay(5_000)
+
+            UpdateChecker.run(this@NetworkMonitorService)
+
+        }
+
+
+
+        scope.launch {
+
             ShizukuManager.awaitUserService(10_000)
 
             ShizukuManager.shellReady(forceRefresh = true)
@@ -226,6 +239,8 @@ class NetworkMonitorService : Service() {
 
 
     override fun onDestroy() {
+
+        instance = null
 
         syncJob?.cancel()
 
@@ -275,6 +290,8 @@ class NetworkMonitorService : Service() {
 
     private fun onNetworkEvent(reason: String) {
 
+        if (UiForegroundGuard.isMainActivityVisible) return
+
         Log.d(TAG, "network event: $reason")
 
         scheduleTransportSync()
@@ -294,6 +311,18 @@ class NetworkMonitorService : Service() {
             switchMutex.withLock { syncTransportState() }
 
         }
+
+    }
+
+
+
+    private fun abortActiveSwitching() {
+
+        disconnectJob?.cancel()
+
+        handlingDisconnect = false
+
+        MonitorWakeLock.release()
 
     }
 
@@ -770,6 +799,22 @@ class NetworkMonitorService : Service() {
             context.stopService(Intent(context, NetworkMonitorService::class.java))
 
         }
+
+
+
+        fun onUiForegroundChanged(visible: Boolean) {
+
+            UiForegroundGuard.isMainActivityVisible = visible
+
+            if (visible) instance?.abortActiveSwitching()
+
+        }
+
+
+
+        @Volatile
+
+        private var instance: NetworkMonitorService? = null
 
 
 
