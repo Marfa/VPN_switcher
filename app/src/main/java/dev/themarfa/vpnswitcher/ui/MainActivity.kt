@@ -8,6 +8,9 @@ import android.net.ConnectivityManager
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -27,8 +30,7 @@ import dev.themarfa.vpnswitcher.network.NetworkTransport
 import dev.themarfa.vpnswitcher.prefs.AppPreferences
 import dev.themarfa.vpnswitcher.service.NetworkMonitorService
 import dev.themarfa.vpnswitcher.shizuku.ShizukuManager
-import dev.themarfa.vpnswitcher.update.GitHubUpdater
-import dev.themarfa.vpnswitcher.update.UpdateNotifier
+import dev.themarfa.vpnswitcher.update.UpdateChecker
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -41,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var prefs: AppPreferences
     private var refreshJob: Job? = null
     private var suppressSwitchListener = false
+    private var vpnPermissionOk: Boolean? = null
 
     private val shizukuReadyListener = { refreshUi() }
 
@@ -63,6 +66,7 @@ class MainActivity : AppCompatActivity() {
     ) {
         refreshUi()
         if (VpnService.prepare(this) == null) {
+            vpnPermissionOk = true
             Toast.makeText(this, "VPN разрешение получено", Toast.LENGTH_SHORT).show()
         }
     }
@@ -93,20 +97,31 @@ class MainActivity : AppCompatActivity() {
         binding.logButton.setOnClickListener { handleLogButton() }
         binding.aboutButton.setOnClickListener { showAboutDialog() }
 
+        setupProxyBanner()
         updateLogButton()
+        UpdateChecker.schedulePeriodic(this)
         requestNotificationPermissionIfNeeded()
         refreshUi()
         syncServiceState()
 
         lifecycleScope.launch {
             delay(2_000)
-            checkForUpdates(silent = true)
+            UpdateChecker.run(this@MainActivity)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        NetworkMonitorService.onUiForegroundChanged(true)
+    }
+
+    override fun onPause() {
+        NetworkMonitorService.onUiForegroundChanged(false)
+        super.onPause()
     }
 
     override fun onStart() {
         super.onStart()
-        UiForegroundGuard.isMainActivityVisible = true
         ShizukuManager.bindUserService()
         refreshJob = lifecycleScope.launch {
             while (isActive) {
@@ -117,7 +132,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        UiForegroundGuard.isMainActivityVisible = false
         refreshJob?.cancel()
         refreshJob = null
         super.onStop()
@@ -217,8 +231,15 @@ class MainActivity : AppCompatActivity() {
         if (!Shizuku.pingBinder()) return false
         if (!ShizukuManager.hasPermission()) return false
         if (!ShizukuManager.isReady) return false
-        if (VpnService.prepare(this) != null) return false
+        if (!hasVpnPermission()) return false
         return true
+    }
+
+    private fun hasVpnPermission(): Boolean {
+        vpnPermissionOk?.let { return it }
+        val ok = VpnService.prepare(this) == null
+        vpnPermissionOk = ok
+        return ok
     }
 
     private fun applyWindowInsets() {
@@ -316,7 +337,7 @@ class MainActivity : AppCompatActivity() {
             ShizukuManager.openManager(this)
             return false
         }
-        if (VpnService.prepare(this) != null) {
+        if (!hasVpnPermission()) {
             Toast.makeText(this, "Нужно VPN-разрешение", Toast.LENGTH_LONG).show()
             return false
         }
@@ -342,7 +363,7 @@ class MainActivity : AppCompatActivity() {
         }
         view.findViewById<android.view.View>(R.id.aboutUpdate).setOnClickListener {
             dialog.dismiss()
-            lifecycleScope.launch { checkForUpdates(silent = false) }
+            lifecycleScope.launch { UpdateChecker.run(this@MainActivity, showToast = true) }
         }
         view.findViewById<android.view.View>(R.id.aboutLicense).setOnClickListener {
             openUrl("${AppConstants.GITHUB_URL}/blob/main/LICENSE")
@@ -354,16 +375,33 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
     }
 
-    private suspend fun checkForUpdates(silent: Boolean) {
-        val current = packageManager.getPackageInfo(packageName, 0).versionName ?: return
-        val update = GitHubUpdater.checkForUpdate(current)
-        if (update == null) {
-            UpdateNotifier.dismiss(this)
-            if (!silent) {
-                Toast.makeText(this, R.string.about_update_none, Toast.LENGTH_SHORT).show()
+    private fun setupProxyBanner() {
+        val banner = binding.proxyAdBanner
+        banner.isVerticalScrollBarEnabled = false
+        banner.isHorizontalScrollBarEnabled = false
+        banner.settings.javaScriptEnabled = false
+        banner.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        banner.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                openUrl(AppConstants.PROXY_AD_URL)
+                return true
             }
-            return
         }
-        UpdateNotifier.show(this, update.versionName, update.releasePageUrl)
+        val html = """
+            <html><head>
+            <meta name="viewport" content="width=device-width,initial-scale=1">
+            </head><body style="margin:0;padding:0;background:transparent">
+            <a href="${AppConstants.PROXY_AD_URL}">
+            <img src="${AppConstants.PROXY_AD_IMAGE_URL}" width="100%"
+            style="max-height:60px;object-fit:contain;display:block"/>
+            </a></body></html>
+        """.trimIndent()
+        banner.loadDataWithBaseURL(
+            AppConstants.PROXY_AD_URL,
+            html,
+            "text/html",
+            "UTF-8",
+            null,
+        )
     }
 }

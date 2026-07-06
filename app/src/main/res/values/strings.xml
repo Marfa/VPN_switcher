@@ -44,6 +44,8 @@
     <string name="update_notification_title">Доступна версия %1$s</string>
     <string name="update_notification_text">Нажмите, чтобы открыть релиз на GitHub</string>
 
+    <string name="proxy_ad_banner_desc">proxys.world — SOCKS5 прокси</string>
+
     <string name="monitor_notification_text">Мониторинг сети</string>
     <string name="action_notification_channel">Действия</string>
 </resources>

@@ -94,6 +94,14 @@ class AppPreferences(context: Context) {
 
 
 
+    var lastNotifiedUpdateVersion: String
+
+        get() = store.getString(AppConstants.KEY_LAST_NOTIFIED_UPDATE, "") ?: ""
+
+        set(value) = store.edit().putString(AppConstants.KEY_LAST_NOTIFIED_UPDATE, value).apply()
+
+
+
     var happHwid: String
 
         get() = store.getString(AppConstants.KEY_HAPP_HWID, "") ?: ""

@@ -213,6 +213,15 @@
                     android:textColor="@color/vg_on_surface_variant"
                     android:textSize="13sp" />
             </LinearLayout>
+
+            <WebView
+                android:id="@+id/proxyAdBanner"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="12dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/proxy_ad_banner_desc"
+                android:scrollbars="none" />
         </LinearLayout>
     </ScrollView>
 
