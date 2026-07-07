@@ -223,7 +223,7 @@
                 android:contentDescription="@string/proxy_ad_banner_desc"
                 android:maxHeight="60dp"
                 android:scaleType="fitCenter"
-                android:visibility="gone" />
+                android:src="@drawable/proxy_ad_banner" />
         </LinearLayout>
     </ScrollView>
 
