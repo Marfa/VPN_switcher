@@ -4,13 +4,13 @@ import android.Manifest
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
+import android.graphics.drawable.Animatable
 import android.net.ConnectivityManager
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -31,15 +31,11 @@ import dev.themarfa.vpnswitcher.prefs.AppPreferences
 import dev.themarfa.vpnswitcher.service.NetworkMonitorService
 import dev.themarfa.vpnswitcher.shizuku.ShizukuManager
 import dev.themarfa.vpnswitcher.update.UpdateChecker
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
-import java.net.HttpURLConnection
-import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
@@ -381,23 +377,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupProxyBanner() {
         binding.proxyAdBanner.setOnClickListener { openUrl(AppConstants.PROXY_AD_URL) }
-        lifecycleScope.launch {
-            val bitmap = withContext(Dispatchers.IO) {
-                try {
-                    val conn = URL(AppConstants.PROXY_AD_IMAGE_URL).openConnection() as HttpURLConnection
-                    conn.connectTimeout = 15_000
-                    conn.readTimeout = 15_000
-                    conn.instanceFollowRedirects = true
-                    conn.inputStream.use { BitmapFactory.decodeStream(it) }
-                } catch (e: Exception) {
-                    Log.w(TAG, "proxy banner load failed", e)
-                    null
-                }
-            }
-            if (bitmap != null) {
-                binding.proxyAdBanner.setImageBitmap(bitmap)
-                binding.proxyAdBanner.visibility = View.VISIBLE
-            }
+        try {
+            val drawable = ImageDecoder.decodeDrawable(
+                ImageDecoder.createSource(resources, R.drawable.proxy_ad_banner),
+            )
+            binding.proxyAdBanner.setImageDrawable(drawable)
+            (drawable as? Animatable)?.start()
+        } catch (e: Exception) {
+            Log.w(TAG, "proxy banner decode failed", e)
         }
     }
 
