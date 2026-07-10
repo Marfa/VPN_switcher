@@ -102,6 +102,8 @@ class NetworkMonitorService : Service() {
 
     private var disconnectJob: Job? = null
 
+    private var postSwitchCheckJob: Job? = null
+
     private var handlingDisconnect = false
 
     private var wasWifi = false
@@ -245,6 +247,8 @@ class NetworkMonitorService : Service() {
         syncJob?.cancel()
 
         disconnectJob?.cancel()
+
+        postSwitchCheckJob?.cancel()
 
         try {
 
@@ -498,6 +502,7 @@ class NetworkMonitorService : Service() {
             }
 
             updateStatus(happStatusAfterSwitch(), notify = false)
+            schedulePostSwitchConnectivityCheck()
 
         } catch (_: TimeoutCancellationException) {
 
@@ -514,6 +519,7 @@ class NetworkMonitorService : Service() {
                 notify = !VpnMonitor.isLikelyHappActive(this),
 
             )
+            schedulePostSwitchConnectivityCheck()
 
         }
 
@@ -543,6 +549,7 @@ class NetworkMonitorService : Service() {
                 if (ShizukuManager.shellReady() || ShizukuManager.awaitUserService(5_000) && ShizukuManager.shellReady()) {
                     orchestrator.prepareWifiMode()
                     prefs.onHappMode = false
+                    schedulePostSwitchConnectivityCheck()
                 }
             }
             onWifiConnectedMaybe()
@@ -576,6 +583,38 @@ class NetworkMonitorService : Service() {
     }
 
 
+
+    private fun schedulePostSwitchConnectivityCheck() {
+        postSwitchCheckJob?.cancel()
+        postSwitchCheckJob = scope.launch {
+            delay(AppConstants.POST_SWITCH_PROBE_DELAY_MS)
+            if (UiForegroundGuard.isMainActivityVisible) return@launch
+            val network = connectivityManager.activeNetwork
+            if (network != null && TelegramProbe.isReachable(network)) {
+                Log.i(TAG, "post-switch probe: Telegram OK")
+                return@launch
+            }
+            Log.w(TAG, "post-switch probe: Telegram unreachable")
+            if (!prefs.pushEnabled) return@launch
+            showConnectionFailedNotification()
+        }
+    }
+
+    private fun showConnectionFailedNotification() {
+        val open = PendingIntent.getActivity(
+            this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE,
+        )
+        val notification = NotificationCompat.Builder(this, CHANNEL_ACTION)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.vpn_connection_failed_notification))
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .build()
+        getSystemService(NotificationManager::class.java).notify(ACTION_NOTIFICATION_ID, notification)
+    }
 
     private fun sendWifiVpnReminder() {
 
