@@ -17,3 +17,5 @@ output.json
 stitch.zip
 stitch_ui/
 assets/
+
+.cursor/rules/
