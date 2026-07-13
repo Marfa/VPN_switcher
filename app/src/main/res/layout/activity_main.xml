@@ -85,9 +85,9 @@
                 android:textAllCaps="false"
                 app:backgroundTint="@color/vg_primary_container"
                 app:cornerRadius="16dp"
-                app:icon="@drawable/ic_shield"
+                app:icon="@drawable/ic_shizuku"
                 app:iconGravity="textStart"
-                app:iconTint="@color/vg_on_primary_container" />
+                app:iconTint="@null" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/vpnPermissionButton"
