@@ -45,14 +45,6 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="@string/app_tagline"
-                android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textColor="@color/vg_on_surface_variant" />
-
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -82,16 +74,6 @@
                     android:textSize="12sp"
                     android:textStyle="bold" />
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/statusText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:gravity="center"
-                android:text="Ожидание"
-                android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textColor="@color/vg_on_surface_variant" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/shizukuButton"

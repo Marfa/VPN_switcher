@@ -23,7 +23,7 @@
     <string name="wifi_vpn_reminder_text">Вы на Wi-Fi — подключите ChatVPN.</string>
 
     <string name="about_title">О приложении</string>
-    <string name="about_body">VPN Switcher — автопереключение между ChatVPN и Happ.\n\nДизайн подготовлен в Google Stitch.\n\nКод подготовлен с помощью Cursor.\n\nЛицензия: CC BY-NC-SA 4.0</string>
+    <string name="about_body">VPN Switcher — автопереключение между ChatVPN и Happ.\n\nДизайн подготовлен в Google Stitch.\n\nКод подготовлен с помощью Cursor.</string>
     <string name="about_github">GitHub</string>
     <string name="about_donate">Донат</string>
     <string name="about_donate_crypto">Донат криптой</string>
@@ -34,7 +34,6 @@
     <string name="logs_empty">Лог пуст</string>
 
     <string name="about_check_update">Проверить обновление</string>
-    <string name="about_license">Лицензия проекта</string>
     <string name="about_update_available">Доступна версия %1$s</string>
     <string name="about_update_none">Обновлений нет</string>
     <string name="about_update_downloading">Загрузка…</string>

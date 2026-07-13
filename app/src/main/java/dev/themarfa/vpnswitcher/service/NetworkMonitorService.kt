@@ -22,6 +22,10 @@ import android.net.NetworkCapabilities
 
 import android.net.NetworkRequest
 
+import android.media.AudioAttributes
+
+import android.media.RingtoneManager
+
 import android.os.Build
 
 import android.os.IBinder
@@ -610,6 +614,7 @@ class NetworkMonitorService : Service() {
             .setContentText(getString(R.string.vpn_connection_failed_notification))
             .setContentIntent(open)
             .setAutoCancel(true)
+            .setDefaults(NotificationCompat.DEFAULT_SOUND or NotificationCompat.DEFAULT_VIBRATE)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .build()
@@ -637,6 +642,8 @@ class NetworkMonitorService : Service() {
             .setContentIntent(open)
 
             .setAutoCancel(true)
+
+            .setDefaults(NotificationCompat.DEFAULT_SOUND or NotificationCompat.DEFAULT_VIBRATE)
 
             .setPriority(NotificationCompat.PRIORITY_HIGH)
 
@@ -717,6 +724,8 @@ class NetworkMonitorService : Service() {
 
             .setAutoCancel(true)
 
+            .setDefaults(NotificationCompat.DEFAULT_SOUND or NotificationCompat.DEFAULT_VIBRATE)
+
             .setOnlyAlertOnce(true)
 
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -753,15 +762,43 @@ class NetworkMonitorService : Service() {
 
         nm.createNotificationChannel(
 
-            NotificationChannel(CHANNEL_ACTION, getString(R.string.action_notification_channel), NotificationManager.IMPORTANCE_HIGH),
+            NotificationChannel(CHANNEL_ACTION, getString(R.string.action_notification_channel), NotificationManager.IMPORTANCE_HIGH).apply {
+
+                configureAlertSound()
+
+            },
 
         )
 
         nm.createNotificationChannel(
 
-            NotificationChannel(CHANNEL_REMINDER, "Напоминания", NotificationManager.IMPORTANCE_HIGH),
+            NotificationChannel(CHANNEL_REMINDER, "Напоминания", NotificationManager.IMPORTANCE_HIGH).apply {
+
+                configureAlertSound()
+
+            },
 
         )
+
+    }
+
+
+
+    private fun NotificationChannel.configureAlertSound() {
+
+        val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+
+        val attrs = AudioAttributes.Builder()
+
+            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+
+            .build()
+
+        setSound(sound, attrs)
+
+        enableVibration(true)
 
     }
 
@@ -817,9 +854,9 @@ class NetworkMonitorService : Service() {
 
         private const val CHANNEL_MONITOR = "vpn_switcher_monitor"
 
-        private const val CHANNEL_ACTION = "vpn_switcher_action"
+        private const val CHANNEL_ACTION = "vpn_switcher_action_v2"
 
-        private const val CHANNEL_REMINDER = "vpn_switcher_reminder"
+        private const val CHANNEL_REMINDER = "vpn_switcher_reminder_v2"
 
 
 

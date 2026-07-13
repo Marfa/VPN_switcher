@@ -5,6 +5,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.RingtoneManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.net.toUri
@@ -13,7 +15,7 @@ import dev.themarfa.vpnswitcher.R
 
 object UpdateNotifier {
 
-    private const val CHANNEL_ID = "vpn_switcher_update"
+    private const val CHANNEL_ID = "vpn_switcher_update_v2"
     private const val NOTIFICATION_ID = 4
 
     fun ensureChannel(context: Context) {
@@ -24,6 +26,13 @@ object UpdateNotifier {
             NotificationManager.IMPORTANCE_HIGH,
         ).apply {
             description = context.getString(R.string.update_notification_channel_desc)
+            val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val attrs = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            setSound(sound, attrs)
+            enableVibration(true)
         }
         context.getSystemService(NotificationManager::class.java)
             .createNotificationChannel(channel)
@@ -45,6 +54,7 @@ object UpdateNotifier {
             .setContentIntent(open)
             .setAutoCancel(true)
             .setOngoing(false)
+            .setDefaults(NotificationCompat.DEFAULT_SOUND or NotificationCompat.DEFAULT_VIBRATE)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
             .build()

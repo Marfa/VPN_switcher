@@ -58,7 +58,7 @@ $env:TEMP\gradle-8.11.1\bin\gradle.bat assembleRelease
 
 Release-подпись: скопируйте `keystore.properties.example` → `keystore.properties`, положите `keystore/vpn-switcher-release.jks` (ключ не в git — храните бэкап).
 
-`minSdk 29`, `targetSdk 35`. Версия: **0.4.7** (21).
+`minSdk 29`, `targetSdk 35`. Версия: **0.4.8** (22).
 
 ## Cursor rules
 
