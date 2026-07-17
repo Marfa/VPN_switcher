@@ -2,11 +2,9 @@ package dev.themarfa.vpnswitcher.ui
 
 import android.Manifest
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.ImageDecoder
 import android.graphics.drawable.Animatable
-import android.net.ConnectivityManager
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
@@ -26,7 +24,6 @@ import dev.themarfa.vpnswitcher.AppConstants
 import dev.themarfa.vpnswitcher.R
 import dev.themarfa.vpnswitcher.databinding.ActivityMainBinding
 import dev.themarfa.vpnswitcher.debug.DebugLogCollector
-import dev.themarfa.vpnswitcher.network.NetworkTransport
 import dev.themarfa.vpnswitcher.prefs.AppPreferences
 import dev.themarfa.vpnswitcher.service.NetworkMonitorService
 import dev.themarfa.vpnswitcher.shizuku.ShizukuManager
@@ -55,12 +52,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val statusPrefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-        if (key == AppConstants.KEY_LAST_STATUS) {
-            runOnUiThread { binding.statusText.text = buildStatusLine() }
-        }
-    }
-
     private val vpnPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) {
@@ -86,7 +77,6 @@ class MainActivity : AppCompatActivity() {
 
         Shizuku.addRequestPermissionResultListener(shizukuPermissionListener)
         ShizukuManager.addOnReadyListener(shizukuReadyListener)
-        prefs.shared.registerOnSharedPreferenceChangeListener(statusPrefListener)
 
         val ver = packageManager.getPackageInfo(packageName, 0)
         binding.versionText.text = "v${ver.versionName}"
@@ -139,7 +129,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         ShizukuManager.removeOnReadyListener(shizukuReadyListener)
-        prefs.shared.unregisterOnSharedPreferenceChangeListener(statusPrefListener)
         Shizuku.removeRequestPermissionResultListener(shizukuPermissionListener)
         if (isFinishing && !prefs.shouldRunService()) {
             ShizukuManager.stop()
@@ -207,7 +196,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshUi() {
-        binding.statusText.text = buildStatusLine()
         val ready = isSetupReady()
         binding.statusChipText.text = if (ready) {
             getString(R.string.status_ready)
@@ -218,13 +206,6 @@ class MainActivity : AppCompatActivity() {
             getColor(if (ready) R.color.vg_secondary else R.color.vg_on_surface_variant),
         )
         updateLogButton()
-    }
-
-    private fun buildStatusLine(): String {
-        val cm = getSystemService(ConnectivityManager::class.java)
-        val net = NetworkTransport.networkSummary(cm)
-        val status = prefs.lastStatus
-        return if (status.contains("Сеть:")) status else "$status · $net"
     }
 
     private fun isSetupReady(): Boolean {
@@ -364,9 +345,6 @@ class MainActivity : AppCompatActivity() {
         view.findViewById<android.view.View>(R.id.aboutUpdate).setOnClickListener {
             dialog.dismiss()
             lifecycleScope.launch { UpdateChecker.run(this@MainActivity, showToast = true) }
-        }
-        view.findViewById<android.view.View>(R.id.aboutLicense).setOnClickListener {
-            openUrl("${AppConstants.GITHUB_URL}/blob/main/LICENSE")
         }
         dialog.show()
     }

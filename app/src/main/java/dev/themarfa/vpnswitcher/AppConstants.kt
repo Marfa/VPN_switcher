@@ -15,6 +15,9 @@ object AppConstants {
     /** Пауза после отключения Wi-Fi перед проверкой Telegram. */
     const val WIFI_LOST_PROBE_DELAY_MS = 10_000L
 
+    /** Пауза после переключения VPN перед проверкой Telegram. */
+    const val POST_SWITCH_PROBE_DELAY_MS = 30_000L
+
     const val PREFS_NAME = "vpn_switcher_prefs"
     const val KEY_HAPP_CONFIG_URI = "happ_config_uri"
     const val KEY_HAPP_JSON_CONFIG = "happ_json_config"

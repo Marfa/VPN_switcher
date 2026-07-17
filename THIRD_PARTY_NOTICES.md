@@ -1,5 +1,9 @@
 # Third-Party Notices
 
+## Shizuku
+
+Кнопка «Настроить Shizuku» использует официальный логотип [Shizuku](https://github.com/RikkaApps/Shizuku) (`ic_launcher_foreground.png` / `ic_launcher.png`) только для отображения Shizuku, в соответствии с условиями Apache 2.0 в репозитории RikkaApps/Shizuku.
+
 ## Anubis
 
 VPN Switcher adapts ideas and patterns from [Anubis](https://github.com/sogonov/anubis) by sogonov.

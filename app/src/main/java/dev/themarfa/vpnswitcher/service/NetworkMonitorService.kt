@@ -22,6 +22,10 @@ import android.net.NetworkCapabilities
 
 import android.net.NetworkRequest
 
+import android.media.AudioAttributes
+
+import android.media.RingtoneManager
+
 import android.os.Build
 
 import android.os.IBinder
@@ -101,6 +105,8 @@ class NetworkMonitorService : Service() {
     private var syncJob: Job? = null
 
     private var disconnectJob: Job? = null
+
+    private var postSwitchCheckJob: Job? = null
 
     private var handlingDisconnect = false
 
@@ -245,6 +251,8 @@ class NetworkMonitorService : Service() {
         syncJob?.cancel()
 
         disconnectJob?.cancel()
+
+        postSwitchCheckJob?.cancel()
 
         try {
 
@@ -498,6 +506,7 @@ class NetworkMonitorService : Service() {
             }
 
             updateStatus(happStatusAfterSwitch(), notify = false)
+            schedulePostSwitchConnectivityCheck()
 
         } catch (_: TimeoutCancellationException) {
 
@@ -514,6 +523,7 @@ class NetworkMonitorService : Service() {
                 notify = !VpnMonitor.isLikelyHappActive(this),
 
             )
+            schedulePostSwitchConnectivityCheck()
 
         }
 
@@ -543,6 +553,7 @@ class NetworkMonitorService : Service() {
                 if (ShizukuManager.shellReady() || ShizukuManager.awaitUserService(5_000) && ShizukuManager.shellReady()) {
                     orchestrator.prepareWifiMode()
                     prefs.onHappMode = false
+                    schedulePostSwitchConnectivityCheck()
                 }
             }
             onWifiConnectedMaybe()
@@ -577,6 +588,39 @@ class NetworkMonitorService : Service() {
 
 
 
+    private fun schedulePostSwitchConnectivityCheck() {
+        postSwitchCheckJob?.cancel()
+        postSwitchCheckJob = scope.launch {
+            delay(AppConstants.POST_SWITCH_PROBE_DELAY_MS)
+            if (UiForegroundGuard.isMainActivityVisible) return@launch
+            val network = connectivityManager.activeNetwork
+            if (network != null && TelegramProbe.isReachable(network)) {
+                Log.i(TAG, "post-switch probe: Telegram OK")
+                return@launch
+            }
+            Log.w(TAG, "post-switch probe: Telegram unreachable")
+            if (!prefs.pushEnabled) return@launch
+            showConnectionFailedNotification()
+        }
+    }
+
+    private fun showConnectionFailedNotification() {
+        val open = PendingIntent.getActivity(
+            this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE,
+        )
+        val notification = NotificationCompat.Builder(this, CHANNEL_ACTION)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.vpn_connection_failed_notification))
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            .setDefaults(NotificationCompat.DEFAULT_SOUND or NotificationCompat.DEFAULT_VIBRATE)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .build()
+        getSystemService(NotificationManager::class.java).notify(ACTION_NOTIFICATION_ID, notification)
+    }
+
     private fun sendWifiVpnReminder() {
 
         val open = PendingIntent.getActivity(
@@ -598,6 +642,8 @@ class NetworkMonitorService : Service() {
             .setContentIntent(open)
 
             .setAutoCancel(true)
+
+            .setDefaults(NotificationCompat.DEFAULT_SOUND or NotificationCompat.DEFAULT_VIBRATE)
 
             .setPriority(NotificationCompat.PRIORITY_HIGH)
 
@@ -678,6 +724,8 @@ class NetworkMonitorService : Service() {
 
             .setAutoCancel(true)
 
+            .setDefaults(NotificationCompat.DEFAULT_SOUND or NotificationCompat.DEFAULT_VIBRATE)
+
             .setOnlyAlertOnce(true)
 
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -714,15 +762,43 @@ class NetworkMonitorService : Service() {
 
         nm.createNotificationChannel(
 
-            NotificationChannel(CHANNEL_ACTION, getString(R.string.action_notification_channel), NotificationManager.IMPORTANCE_HIGH),
+            NotificationChannel(CHANNEL_ACTION, getString(R.string.action_notification_channel), NotificationManager.IMPORTANCE_HIGH).apply {
+
+                configureAlertSound()
+
+            },
 
         )
 
         nm.createNotificationChannel(
 
-            NotificationChannel(CHANNEL_REMINDER, "Напоминания", NotificationManager.IMPORTANCE_HIGH),
+            NotificationChannel(CHANNEL_REMINDER, "Напоминания", NotificationManager.IMPORTANCE_HIGH).apply {
+
+                configureAlertSound()
+
+            },
 
         )
+
+    }
+
+
+
+    private fun NotificationChannel.configureAlertSound() {
+
+        val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+
+        val attrs = AudioAttributes.Builder()
+
+            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+
+            .build()
+
+        setSound(sound, attrs)
+
+        enableVibration(true)
 
     }
 
@@ -778,9 +854,9 @@ class NetworkMonitorService : Service() {
 
         private const val CHANNEL_MONITOR = "vpn_switcher_monitor"
 
-        private const val CHANNEL_ACTION = "vpn_switcher_action"
+        private const val CHANNEL_ACTION = "vpn_switcher_action_v2"
 
-        private const val CHANNEL_REMINDER = "vpn_switcher_reminder"
+        private const val CHANNEL_REMINDER = "vpn_switcher_reminder_v2"
 
 
 

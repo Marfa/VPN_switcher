@@ -45,14 +45,6 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="@string/app_tagline"
-                android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textColor="@color/vg_on_surface_variant" />
-
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -83,16 +75,6 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/statusText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:gravity="center"
-                android:text="Ожидание"
-                android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textColor="@color/vg_on_surface_variant" />
-
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/shizukuButton"
                 android:layout_width="match_parent"
@@ -103,9 +85,9 @@
                 android:textAllCaps="false"
                 app:backgroundTint="@color/vg_primary_container"
                 app:cornerRadius="16dp"
-                app:icon="@drawable/ic_shield"
+                app:icon="@drawable/ic_shizuku"
                 app:iconGravity="textStart"
-                app:iconTint="@color/vg_on_primary_container" />
+                app:iconTint="@null" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/vpnPermissionButton"
