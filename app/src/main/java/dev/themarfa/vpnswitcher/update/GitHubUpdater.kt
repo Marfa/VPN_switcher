@@ -6,14 +6,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.File
-import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
 data class UpdateInfo(
     val versionName: String,
-    val downloadUrl: String,
     val releasePageUrl: String,
     val releaseNotes: String,
 )
@@ -29,12 +26,11 @@ object GitHubUpdater {
             val tag = json.optString("tag_name").removePrefix("v").trim()
             if (tag.isBlank() || !isNewer(tag, currentVersion)) return@withContext null
 
-            val apkUrl = findApkAsset(json.optJSONArray("assets"))
-                ?: return@withContext null
+            // Require a published APK asset so we don't notify on tag-only releases.
+            if (findApkAsset(json.optJSONArray("assets")) == null) return@withContext null
 
             UpdateInfo(
                 versionName = tag,
-                downloadUrl = apkUrl,
                 releasePageUrl = json.optString("html_url")
                     .takeIf { it.isNotBlank() }
                     ?: "${AppConstants.GITHUB_URL}/releases/latest",
@@ -45,35 +41,6 @@ object GitHubUpdater {
             null
         }
     }
-
-    suspend fun downloadApk(url: String, target: File, onProgress: (Int) -> Unit): Boolean =
-        withContext(Dispatchers.IO) {
-            try {
-                target.parentFile?.mkdirs()
-                val conn = (URL(url).openConnection() as HttpURLConnection).apply {
-                    connectTimeout = 20_000
-                    readTimeout = 120_000
-                    setRequestProperty("Accept", "application/octet-stream")
-                }
-                val total = conn.contentLengthLong.coerceAtLeast(1L)
-                conn.inputStream.use { input ->
-                    FileOutputStream(target).use { out ->
-                        val buf = ByteArray(16_384)
-                        var read: Int
-                        var done = 0L
-                        while (input.read(buf).also { read = it } >= 0) {
-                            out.write(buf, 0, read)
-                            done += read
-                            onProgress(((done * 100) / total).toInt().coerceIn(0, 100))
-                        }
-                    }
-                }
-                true
-            } catch (e: Exception) {
-                Log.e(TAG, "download failed", e)
-                false
-            }
-        }
 
     private fun fetchJson(url: String): JSONObject? {
         val conn = (URL(url).openConnection() as HttpURLConnection).apply {

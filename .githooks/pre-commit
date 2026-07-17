@@ -1,0 +1,8 @@
+#!/bin/sh
+# Block commits that introduce secrets. Install: git config core.hooksPath .githooks
+set -e
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "gitleaks not found. Install: brew install gitleaks" >&2
+  exit 1
+fi
+gitleaks protect --staged --verbose

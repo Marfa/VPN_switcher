@@ -1,8 +1,11 @@
 package dev.themarfa.vpnswitcher.happ
 
 import android.content.ClipData
+import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
+import android.os.Build
+import android.os.PersistableBundle
 import android.util.Log
 import dev.themarfa.vpnswitcher.AppConstants
 import dev.themarfa.vpnswitcher.automation.ShizukuUiPicker
@@ -26,9 +29,11 @@ object HappJsonImporter {
         if (tapClipboardOption()) {
             Log.i(TAG, "import via clipboard UI")
             delay(1_500)
+            clearClipboard(context)
             return
         }
 
+        // Manual Happ paste still needs the clip; marked sensitive on API 33+.
         Log.w(TAG, "import UI failed — JSON в буфере, импортируйте в Happ вручную (+ → буфер)")
     }
 
@@ -89,7 +94,17 @@ object HappJsonImporter {
 
     private fun copyToClipboard(context: Context, json: String) {
         val clipboard = context.getSystemService(ClipboardManager::class.java)
-        clipboard.setPrimaryClip(ClipData.newPlainText("happ-json", json))
+        val clip = ClipData.newPlainText("happ-json", json)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            clip.description.extras = PersistableBundle().apply {
+                putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true)
+            }
+        }
+        clipboard.setPrimaryClip(clip)
+    }
+
+    private fun clearClipboard(context: Context) {
+        context.getSystemService(ClipboardManager::class.java).clearPrimaryClip()
     }
 
     private fun launchHapp() {

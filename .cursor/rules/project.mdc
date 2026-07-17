@@ -1,7 +1,0 @@
----
-description: Project-wide lazy senior dev defaults
-alwaysApply: true
----
-
-Reuse before rewrite. Smallest diff that fixes root cause.
-No new dependencies without need. Match existing naming and file layout.
