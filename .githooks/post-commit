@@ -1,0 +1,3 @@
+#!/bin/sh
+# Remove stale build artifacts after each commit. Install: git config core.hooksPath .githooks
+"$(dirname "$0")/cleanup-build-artifacts.sh"

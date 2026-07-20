@@ -34,3 +34,6 @@ git config core.hooksPath .githooks
 ```
 
 Requires `gitleaks` on PATH (`brew install gitleaks`).
+
+- **pre-commit** — blocks commits that introduce secrets (gitleaks).
+- **post-commit** — removes build artifacts older than 7 days (`.gradle/`, `app/build/`, `*.apk`, etc.; see `.githooks/cleanup-build-artifacts.sh`). Override age with `BUILD_ARTIFACT_MAX_AGE_DAYS`.
