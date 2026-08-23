@@ -43,15 +43,15 @@ object UpdateChecker {
     fun schedulePeriodic(context: Context) {
         val app = context.applicationContext
         val alarm = app.getSystemService(AlarmManager::class.java) ?: return
-        val intent = Intent(app, UpdateAlarmReceiver::class.java).apply {
-            action = ACTION_CHECK_UPDATES
-            setPackage(app.packageName)
-        }
+        val intent = Intent(app, UpdateAlarmReceiver::class.java)
+            .setClass(app, UpdateAlarmReceiver::class.java)
+            .setPackage(app.packageName)
+            .setAction(ACTION_CHECK_UPDATES)
         val pending = PendingIntent.getBroadcast(
             app,
             ALARM_REQUEST_CODE,
             intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            PendingIntent.FLAG_IMMUTABLE,
         )
         val trigger = SystemClock.elapsedRealtime() + CHECK_INTERVAL_MS
         alarm.setInexactRepeating(

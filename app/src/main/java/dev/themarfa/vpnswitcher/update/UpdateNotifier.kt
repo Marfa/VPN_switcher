@@ -44,12 +44,12 @@ object UpdateNotifier {
         val open = PendingIntent.getActivity(
             context,
             NOTIFICATION_ID,
-            Intent(context, MainActivity::class.java).apply {
-                setPackage(context.packageName)
-                putExtra(MainActivity.EXTRA_OPEN_URL, url)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            },
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            Intent(context, MainActivity::class.java)
+                .setClass(context, MainActivity::class.java)
+                .setPackage(context.packageName)
+                .putExtra(MainActivity.EXTRA_OPEN_URL, url)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            PendingIntent.FLAG_IMMUTABLE,
         )
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)

@@ -11,18 +11,18 @@ import kotlinx.coroutines.launch
 class UpdateAlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
+        val action = intent.getAction()
+        if (action != Intent.ACTION_BOOT_COMPLETED && action != UpdateChecker.ACTION_CHECK_UPDATES) {
+            return
+        }
         val pending = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
                 val app = context.applicationContext
-                when (intent.action) {
-                    Intent.ACTION_BOOT_COMPLETED -> {
-                        UpdateChecker.schedulePeriodic(app)
-                        UpdateChecker.run(app)
-                    }
-                    UpdateChecker.ACTION_CHECK_UPDATES -> UpdateChecker.run(app)
-                    else -> return@launch
+                if (action == Intent.ACTION_BOOT_COMPLETED) {
+                    UpdateChecker.schedulePeriodic(app)
                 }
+                UpdateChecker.run(app)
             } finally {
                 pending.finish()
             }
