@@ -98,6 +98,13 @@ class MainActivity : AppCompatActivity() {
             delay(2_000)
             UpdateChecker.run(this@MainActivity)
         }
+        handleOpenUrl(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleOpenUrl(intent)
     }
 
     override fun onResume() {
@@ -349,6 +356,22 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    private fun handleOpenUrl(intent: Intent?) {
+        val url = intent?.getStringExtra(EXTRA_OPEN_URL) ?: return
+        intent.removeExtra(EXTRA_OPEN_URL)
+        if (!isTrustedHttpsUrl(url)) return
+        openUrl(url)
+    }
+
+    private fun isTrustedHttpsUrl(url: String): Boolean {
+        val uri = url.toUri()
+        if (uri.scheme != "https") return false
+        val host = uri.host ?: return false
+        val path = uri.path.orEmpty()
+        return host.equals("github.com", ignoreCase = true) &&
+            path.startsWith("/Marfa/VPN_switcher")
+    }
+
     private fun openUrl(url: String) {
         startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
     }
@@ -367,6 +390,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
+        const val EXTRA_OPEN_URL = "dev.themarfa.vpnswitcher.extra.OPEN_URL"
         private const val TAG = "MainActivity"
     }
 }

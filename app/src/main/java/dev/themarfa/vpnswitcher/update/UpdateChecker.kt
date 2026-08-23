@@ -13,6 +13,8 @@ import kotlinx.coroutines.withContext
 
 object UpdateChecker {
 
+    const val ACTION_CHECK_UPDATES = "dev.themarfa.vpnswitcher.CHECK_UPDATES"
+
     private const val CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000L
     private const val ALARM_REQUEST_CODE = 9001
 
@@ -41,7 +43,10 @@ object UpdateChecker {
     fun schedulePeriodic(context: Context) {
         val app = context.applicationContext
         val alarm = app.getSystemService(AlarmManager::class.java) ?: return
-        val intent = Intent(app, UpdateAlarmReceiver::class.java)
+        val intent = Intent(app, UpdateAlarmReceiver::class.java).apply {
+            action = ACTION_CHECK_UPDATES
+            setPackage(app.packageName)
+        }
         val pending = PendingIntent.getBroadcast(
             app,
             ALARM_REQUEST_CODE,

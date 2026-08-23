@@ -15,10 +15,14 @@ class UpdateAlarmReceiver : BroadcastReceiver() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
                 val app = context.applicationContext
-                if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-                    UpdateChecker.schedulePeriodic(app)
+                when (intent.action) {
+                    Intent.ACTION_BOOT_COMPLETED -> {
+                        UpdateChecker.schedulePeriodic(app)
+                        UpdateChecker.run(app)
+                    }
+                    UpdateChecker.ACTION_CHECK_UPDATES -> UpdateChecker.run(app)
+                    else -> return@launch
                 }
-                UpdateChecker.run(app)
             } finally {
                 pending.finish()
             }

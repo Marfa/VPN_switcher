@@ -606,7 +606,7 @@ class NetworkMonitorService : Service() {
 
     private fun showConnectionFailedNotification() {
         val open = PendingIntent.getActivity(
-            this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE,
+            this, 0, Intent(this, MainActivity::class.java).setPackage(packageName), PendingIntent.FLAG_IMMUTABLE,
         )
         val notification = NotificationCompat.Builder(this, CHANNEL_ACTION)
             .setSmallIcon(R.drawable.ic_notification)
@@ -625,7 +625,7 @@ class NetworkMonitorService : Service() {
 
         val open = PendingIntent.getActivity(
 
-            this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE,
+            this, 0, Intent(this, MainActivity::class.java).setPackage(packageName), PendingIntent.FLAG_IMMUTABLE,
 
         )
 
@@ -708,7 +708,7 @@ class NetworkMonitorService : Service() {
 
         val open = PendingIntent.getActivity(
 
-            this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE,
+            this, 0, Intent(this, MainActivity::class.java).setPackage(packageName), PendingIntent.FLAG_IMMUTABLE,
 
         )
 
@@ -808,7 +808,7 @@ class NetworkMonitorService : Service() {
 
         val open = PendingIntent.getActivity(
 
-            this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE,
+            this, 0, Intent(this, MainActivity::class.java).setPackage(packageName), PendingIntent.FLAG_IMMUTABLE,
 
         )
 
