@@ -31,9 +31,22 @@ Do not push until open PRs and security alerts are consciously handled (fixed, m
 ```bash
 gh pr list --repo Marfa/VPN_switcher
 gh api "/repos/Marfa/VPN_switcher/dependabot/alerts?state=open"
+gh api "/repos/Marfa/VPN_switcher/dependabot/alerts?state=open&classification=malware"
 gh api "/repos/Marfa/VPN_switcher/code-scanning/alerts?state=open"
 gh api "/repos/Marfa/VPN_switcher/secret-scanning/alerts?state=open"
 gh run list --repo Marfa/VPN_switcher --limit 10
 gh run watch <run-id> --repo Marfa/VPN_switcher
 gh run view <run-id> --repo Marfa/VPN_switcher --log-failed
+```
+
+## Enable / re-enable security features (if pages look empty)
+
+```bash
+# Dependabot alerts + security updates (API)
+gh api -X PUT repos/Marfa/VPN_switcher/vulnerability-alerts
+gh api -X PUT repos/Marfa/VPN_switcher/automated-security-fixes
+
+# Dependabot malware alerts: no REST API — enable in UI:
+# Settings → Security and quality → Advanced Security → Dependabot malware alerts → Enable
+# https://github.com/Marfa/VPN_switcher/settings/security_analysis
 ```
