@@ -14,13 +14,10 @@
     <string name="switch_always">Переключать VPN всегда</string>
     <string name="switch_always_hint">Wi-Fi пропал → сразу Happ, без проверки</string>
     <string name="switch_push">Отправка пушей</string>
-    <string name="switch_push_hint">Только когда нужно ваше действие</string>
+    <string name="switch_push_hint">Пуш при недоступности сети; без напоминания на Wi-Fi</string>
 
     <string name="setup_title">Первоначальная настройка</string>
     <string name="setup_body">Работает только с ChatVPN (Wi-Fi) и Happ (mobile).\n\n1. Запустите Shizuku и нажмите «Настроить Shizuku».\n2. Выдайте VPN-разрешение.\n3. Добавьте виджет Happ на рабочий стол.\n4. Подключите ChatVPN и Happ вручную по одному разу.\n5. Включите нужный режим переключения.</string>
-
-    <string name="wifi_vpn_reminder_title">Включите ChatVPN</string>
-    <string name="wifi_vpn_reminder_text">Вы на Wi-Fi — подключите ChatVPN.</string>
 
     <string name="about_title">О приложении</string>
     <string name="about_body">VPN Switcher — автопереключение между ChatVPN и Happ.\n\nДизайн подготовлен в Google Stitch.\n\nКод подготовлен с помощью Cursor.</string>

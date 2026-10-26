@@ -112,8 +112,6 @@ class NetworkMonitorService : Service() {
 
     private var wasWifi = false
 
-    private var suppressWifiReminderUntil = 0L
-
     private var suppressWifiOffUntil = 0L
 
 
@@ -177,8 +175,6 @@ class NetworkMonitorService : Service() {
         lastTransport = NetworkTransport.resolve(connectivityManager)
 
         wasWifi = NetworkTransport.hasWifi(connectivityManager)
-
-        suppressWifiReminderUntil = SystemClock.elapsedRealtime() + 60_000
 
         suppressWifiOffUntil = SystemClock.elapsedRealtime() + 15_000
 
@@ -375,7 +371,7 @@ class NetworkMonitorService : Service() {
 
         if (handlingDisconnect) return
 
-        if (!prefs.switchAlways && !prefs.switchOnUnavailable) return
+        if (!prefs.switchAlways && !prefs.switchOnUnavailable && !prefs.pushEnabled) return
 
         if (SystemClock.elapsedRealtime() < suppressWifiOffUntil) return
 
@@ -409,41 +405,20 @@ class NetworkMonitorService : Service() {
 
             if (UiForegroundGuard.isMainActivityVisible) return
 
-            if (!ShizukuManager.shellReady()) {
-                updateStatus("Нужен Shizuku — нажмите «Настроить Shizuku»")
-                return
-            }
-
-
-
             if (NetworkTransport.hasWifi(connectivityManager)) {
-
                 updateStatus("Wi-Fi снова есть — пропуск")
-
                 syncTransportNow()
-
                 return
-
             }
-
-
-
-            if (!ShizukuManager.isReady && !ShizukuManager.awaitUserService(8_000)) {
-
-                updateStatus("Shizuku недоступен — откройте приложение")
-
-                return
-
-            }
-
-
 
             if (prefs.switchAlways) {
+                if (!ensureShizukuForSwitch()) return
                 switchToHappWithStatus("Wi-Fi off → Happ…")
                 return
             }
 
-            if (!prefs.switchOnUnavailable) return
+            // switchOnUnavailable и/или только пуши: проверка доступности
+            if (!prefs.switchOnUnavailable && !prefs.pushEnabled) return
 
             val network = NetworkTransport.findCellularNetwork(connectivityManager)
 
@@ -459,7 +434,13 @@ class NetworkMonitorService : Service() {
                 return
             }
 
-            switchToHappWithStatus("Сеть недоступна → Happ…")
+            if (prefs.switchOnUnavailable) {
+                if (!ensureShizukuForSwitch()) return
+                switchToHappWithStatus("Сеть недоступна → Happ…")
+            } else {
+                updateStatus("Сеть недоступна", notify = false)
+                showConnectionFailedNotification()
+            }
 
         } catch (e: CancellationException) {
 
@@ -545,7 +526,7 @@ class NetworkMonitorService : Service() {
 
     private fun onWifiReturned() {
         if (UiForegroundGuard.isMainActivityVisible) {
-            onWifiConnectedMaybe()
+            updateStatus("Wi-Fi подключён", notify = false)
             return
         }
         scope.launch {
@@ -556,7 +537,7 @@ class NetworkMonitorService : Service() {
                     schedulePostSwitchConnectivityCheck()
                 }
             }
-            onWifiConnectedMaybe()
+            updateStatus("Wi-Fi подключён", notify = false)
         }
     }
 
@@ -567,23 +548,17 @@ class NetworkMonitorService : Service() {
         NetworkTransport.resolve(connectivityManager)?.let { lastTransport = it }
     }
 
-
-
-    private fun onWifiConnectedMaybe() {
-
-        if (SystemClock.elapsedRealtime() < suppressWifiReminderUntil) return
-
-        onWifiConnected()
-
-    }
-
-
-
-    private fun onWifiConnected() {
-        updateStatus("Wi-Fi подключён", notify = false)
-        if (!prefs.pushEnabled) return
-        if (prefs.switchAlways || prefs.switchOnUnavailable) return
-        sendWifiVpnReminder()
+    /** Shizuku нужен только для автопереключения VPN, не для проверки доступности. */
+    private suspend fun ensureShizukuForSwitch(): Boolean {
+        if (!ShizukuManager.shellReady()) {
+            updateStatus("Нужен Shizuku — нажмите «Настроить Shizuku»")
+            return false
+        }
+        if (!ShizukuManager.isReady && !ShizukuManager.awaitUserService(8_000)) {
+            updateStatus("Shizuku недоступен — откройте приложение")
+            return false
+        }
+        return true
     }
 
 
@@ -605,6 +580,7 @@ class NetworkMonitorService : Service() {
     }
 
     private fun showConnectionFailedNotification() {
+        if (!prefs.pushEnabled) return
         val open = PendingIntent.getActivity(
             this, 0, Intent(this, MainActivity::class.java).setPackage(packageName), PendingIntent.FLAG_IMMUTABLE,
         )
@@ -620,44 +596,6 @@ class NetworkMonitorService : Service() {
             .build()
         getSystemService(NotificationManager::class.java).notify(ACTION_NOTIFICATION_ID, notification)
     }
-
-    private fun sendWifiVpnReminder() {
-
-        val open = PendingIntent.getActivity(
-
-            this, 0, Intent(this, MainActivity::class.java).setPackage(packageName), PendingIntent.FLAG_IMMUTABLE,
-
-        )
-
-
-
-        val notification = NotificationCompat.Builder(this, CHANNEL_REMINDER)
-
-            .setSmallIcon(R.drawable.ic_notification)
-
-            .setContentTitle(getString(R.string.wifi_vpn_reminder_title))
-
-            .setContentText(getString(R.string.wifi_vpn_reminder_text))
-
-            .setContentIntent(open)
-
-            .setAutoCancel(true)
-
-            .setDefaults(NotificationCompat.DEFAULT_SOUND or NotificationCompat.DEFAULT_VIBRATE)
-
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-
-            .build()
-
-
-
-        getSystemService(NotificationManager::class.java)
-
-            .notify(REMINDER_NOTIFICATION_ID, notification)
-
-    }
-
-
 
     private fun networkLabel(): String =
 
@@ -770,16 +708,6 @@ class NetworkMonitorService : Service() {
 
         )
 
-        nm.createNotificationChannel(
-
-            NotificationChannel(CHANNEL_REMINDER, "Напоминания", NotificationManager.IMPORTANCE_HIGH).apply {
-
-                configureAlertSound()
-
-            },
-
-        )
-
     }
 
 
@@ -848,15 +776,11 @@ class NetworkMonitorService : Service() {
 
         private const val NOTIFICATION_ID = 1
 
-        private const val REMINDER_NOTIFICATION_ID = 2
-
         private const val ACTION_NOTIFICATION_ID = 3
 
         private const val CHANNEL_MONITOR = "vpn_switcher_monitor"
 
         private const val CHANNEL_ACTION = "vpn_switcher_action_v2"
-
-        private const val CHANNEL_REMINDER = "vpn_switcher_reminder_v2"
 
 
 

@@ -28,7 +28,7 @@ gradlew assembleDebug
 |---------------|-----------|
 | Переключать VPN при недоступности | Wi-Fi off → 10 с → проверка mobile → Happ |
 | Переключать VPN всегда | Wi-Fi off → сразу Happ |
-| Отправка пушей | Только когда нужно ваше действие (не при автопереключении) |
+| Отправка пушей | При недоступности сети (без автопереключения и без пуша на Wi-Fi) |
 
 ## Лицензии
 
@@ -58,7 +58,7 @@ $env:TEMP\gradle-8.11.1\bin\gradle.bat assembleRelease
 
 Release-подпись: скопируйте `keystore.properties.example` → `keystore.properties`, положите `keystore/vpn-switcher-release.jks` (ключ не в git — храните бэкап).
 
-`minSdk 29`, `targetSdk 35`. Версия: **0.4.10** (24).
+`minSdk 29`, `targetSdk 35`. Версия: **0.4.11** (25).
 
 ## Cursor rules
 
